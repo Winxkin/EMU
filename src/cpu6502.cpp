@@ -5,11 +5,8 @@ CPU6502::CPU6502()
     log_info("Initialize CPU 6520");
     /*create loop up table mapping instruct operation and address mode */
     look_up =
-        {{"LDA", &CPU6502::LDA, &CPU6502::IME, 2}, {"LDA", &CPU6502::LDA, &CPU6502::ZP0, 3}, {"LDA", &CPU6502::LDA, &CPU6502::ZPX, 4}, {"LDA", &CPU6502::LDA, &CPU6502::ABS, 4}, {"LDA", &CPU6502::LDA, &CPU6502::ABX, 4}, {"LDA", &CPU6502::LDA, &CPU6502::ABY, 4}, {"LDA", &CPU6502::LDA, &CPU6502::INDX, 6}, {"LDA", &CPU6502::LDA, &CPU6502::INDY, 5},
-         {},
-         {},
-         {}};
-    
+        {{"LDA", &CPU6502::LDA, &CPU6502::IME, 2}, {"LDA", &CPU6502::LDA, &CPU6502::ZP0, 3}, {"LDA", &CPU6502::LDA, &CPU6502::ZPX, 4}, {"LDA", &CPU6502::LDA, &CPU6502::ABS, 4}, {"LDA", &CPU6502::LDA, &CPU6502::ABX, 4}, {"LDA", &CPU6502::LDA, &CPU6502::ABY, 4}, {"LDA", &CPU6502::LDA, &CPU6502::INDX, 6}, {"LDA", &CPU6502::LDA, &CPU6502::INDY, 5}};
+
     reset();
 };
 
@@ -24,18 +21,40 @@ void CPU6502::reset()
     PC = 0xFFFC;
     X = 0x00;
     Y = 0x00;
-
-    flag.N = flag.V = flag.IG = flag.B =
-        flag.D = flag.I = flag.Z = flag.C = 0;
+    SR = 0x00;
 };
 
-void CPU6502::execute(int ticks, MEM &mem)
+void CPU6502::fetch()
 {
 }
-
-void CPU6502::fetch(){
-
+void CPU6502::connectBus(BUS *b)
+{
+    bus = b;
 };
+
+bool CPU6502::getflag(FLAG f)
+{
+    if (f & SR)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+void CPU6502::setflag(FLAG f, bool val)
+{
+    if (val)
+    {
+        SR |= f; // set flag to 1
+    }
+    else
+    {
+        SR &= ~f; // clear flag
+    }
+}
 
 BYTE CPU6502::IME()
 {

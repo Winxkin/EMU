@@ -1,11 +1,29 @@
 #ifndef CPU6502_H
 #define CPU6502_H
 #include "common.h"
+/*
+Registers
+PC	program counter	(16 bit)
+AC	accumulator	(8 bit)
+X	X register	(8 bit)
+Y	Y register	(8 bit)
+SR	status register [NV-BDIZC]	(8 bit)
+SP	stack pointer	(8 bit)
+Note: The status register (SR) is also known as the P register.
 
-typedef struct MEMORY
-{
+SR Flags (bit 7 to bit 0)
+N	Negative
+V	Overflow
+-	ignored
+B	Break
+D	Decimal (use BCD for arithmetics)
+I	Interrupt (IRQ disable)
+Z	Zero
+C	Carry
+*/
 
-} MEM;
+/*creating empty class BUS to pass the compiler*/
+class BUS;
 
 class CPU6502
 {
@@ -19,18 +37,20 @@ private:
     BYTE SP; // stack register
 
     /*BIT STATUS*/
-    typedef struct FLAG
+    enum FLAG
     {
-        BYTE N : 1;  // Negative
-        BYTE V : 1;  // Overflow
-        BYTE IG : 1; // ignored
-        BYTE B : 1;  // Break
-        BYTE D : 1;  // Decimal (use BCD for arithmetics)
-        BYTE I : 1;  // Interrupt (IRQ disable)
-        BYTE Z : 1;  // Zero
-        BYTE C : 1;  // Zero
-    } FLAG;
-    FLAG flag;
+        N = 1 << 7,  // Negative
+        V = 1 << 6,  // Overflow
+        IG = 1 << 5, // ignored
+        B = 1 << 4,  // ignored
+        D = 1 << 3,  // Decimal
+        I = 1 << 2,  // Interrupt
+        Z = 1 << 1,  // Zero
+        C = 1 << 0   // Carry
+    };
+
+    bool getflag(FLAG f);           // return state of bit flag
+    void setflag(FLAG f, bool val); // set bit flag 0 or 1
 
 private:
     /*Address mode*/
@@ -135,12 +155,18 @@ private:
     BYTE BIT(); // bit test (accumulator & memory)
     BYTE NOP(); // no operation
 
+private:
+    BUS *bus = nullptr; // Create pointer link to Bus communicate
+
 public:
     CPU6502();
     ~CPU6502();
     void reset();
-    void execute(int ticks, MEM &mem);
+    void clock();
+    void irq();
     void fetch();
+    void connectBus(BUS *b);
+    bool completed(); // return true if instruction completed
 
     struct INSTRUCTION
     {
